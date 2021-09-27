@@ -2,11 +2,11 @@
 const cacheName = 'cache-v1';
 // List the files to precache
 const precacheResources = ['real_osce.js','osce.css','osce.js',
-"http://mdcu.github.io/onka.js/asset/onka.png",
-"http://mdcu.github.io/onka.js/onka_base.css",
-"http://mdcu.github.io/onka.js/onka.js",
-"http://mdcu.github.io/onka.js/onka_array.js",
-"http://mdcu.github.io/onka.js/onka_file.js",
+"https://mdcu.github.io/onka.js/asset/onka.png",
+"https://mdcu.github.io/onka.js/onka_base.css",
+"https://mdcu.github.io/onka.js/onka.js",
+"https://mdcu.github.io/onka.js/onka_array.js",
+"https://mdcu.github.io/onka.js/onka_file.js",
 "https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"];
 
 // When the service worker is installing, open the cache and add the precache resources to it
