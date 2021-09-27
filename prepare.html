@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="viewport" content="user-scalable=no, width=device-width"/>
+    <meta name="apple-mobile-web-app-title" content="cOSCE"/>
+    <title>OSCE Schedule preparation</title>
+    <link rel="icon" href="https://mdcu.github.io/onka.js/asset/onka.png" type="image/x-icon"/>
+    <link rel="stylesheet" href="https://mdcu.github.io/onka.js/onka_base.css"/>
+    <link rel="stylesheet" href="osce.css"/>
+    <!--<link rel="stylesheet" href="onka_underproduction.css"/> <!-- comment out this line once design process is done-->
+    <script src="https://mdcu.github.io/onka.js/onka.js"></script>
+    <script src="https://mdcu.github.io/onka.js/onka_array.js"></script>
+    <script src="https://mdcu.github.io/onka.js/onka_file.js"></script>
+    <script src="https://mdcu.github.io/onka.js/onka_dom.js"></script>
+    <script src="osce.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <!--
+      ```
+        stepwise
+        1) JSON.stringify the examTree
+        2) CryptoJS.AES.encrypt(...,PASSWORD)
+        3) CryptoJS.AES.decrypt(...,PASSWORD).toString(CryptoJS.enc.Utf8)
+        4) JSON.parse(...)
+      ```
+    -->
+    <style>
+      div.error {
+        display: inline-block;
+        width:2em;height:2em;background-size: cover;
+        background-image: url("asset/error.png");
+      }
+      div.approve {
+        display: inline-block;
+        width:2em;height:2em;background-size: cover;
+        background-image: url("asset/approve.png");
+      }
+      div.caution {
+        display: inline-block;
+        width:2em;height:2em;background-size: cover;
+        background-image: url("asset/caution.png");
+      }
+      #loadCheck, #showTree {
+        border:1px solid gray;
+        border-radius: 0.5em;
+        padding:1em;
+        margin-top:1em;
+        background-color: rgb(200,250,200);
+      }
+      #roundName, #password {display: block}
+      #detailPart1, #detailPart2 ,#FormDetail {
+        border: 1px solid blue;
+        padding: 1em;
+        margin-top: 1em;
+        background-color: rgb(200,200,255);
+      }
+      .inputCSVDiv {
+        margin-top: 1em;
+        border-bottom: 1px solid pink;
+      }
+      .inputCSVDiv p {margin-top:0.5em;}
+      .unitName {
+        padding:0.2em;
+        margin-right:1em;
+        background-color: gold;
+      }
+
+      #originCode, #encryptedCode, #decryptedCode, #fullTree{
+        border: 1px solid gray;
+        margin-right:0.25em;
+        padding:0.5em;
+        word-break: break-all;
+        font-size:0.5em;
+      }
+    </style>
+
+
+    <script>
+    var roundTree = {}
+    var staffTree = {}
+    var testTree = {}
+    var roundList = []
+    var superExam = {}
+    var superTree = {}
+    var test_name = ""
+
+    export_promise2 = async function(KEY,P){log(KEY);superExam[KEY] = (await P)}
+
+    emit = function(target,typeAlert,message){
+      target.appendChild(CE("div")).className = typeAlert
+      target.appendChild(CE("span")).innerText = message
+      target.appendChild(CE("br"))
+    }
+
+    read_round_table = function(csvText){
+      let SA = CSVToArray(csvText)
+      let CC = {"ROUND":"","EXAM":"","STAFF":"","STUDENT":""}
+      document.body.appendChild(CE("div")).id = "loadCheck"
+      document.body.appendChild(CE("div")).id = "showTree"
+      for(let i=0;i<SA[0].length;i++)
+        if(CC[SA[0][i]]==undefined){
+          emit(ID("loadCheck"),"error","พบหัวตาราง"+SA[0][i]+"... หัวตารางต้องมีแค่ ROUND STAFF EXAM STUDENT")
+          return false
+        }else{CC[SA[0][i]]=i}
+      emit(ID("loadCheck"),"approve","หัวตารางถูกต้อง")
+      for(let i = 1;i<SA.length;i++){
+        //log(i)
+        //console.log(roundTree)
+        if(SA[i][0][0].search(/[0-9]/)>=0)SA[i][0] = "_"+SA[i][0]
+        if(!roundList.includes(SA[i][CC.ROUND])){
+          roundList.push(SA[i][CC.ROUND])
+          roundTree[SA[i][CC.ROUND]]={"studentList":[],"staffList":[],"examList":[],"breakCount":0}
+        }
+        //check student
+        if(SA[i][CC.STUDENT]==""){roundTree[SA[i][CC.ROUND]].breakCount++}else
+        if(roundTree[SA[i][CC.ROUND]].studentList.includes(SA[i][CC.STUDENT])){
+          emit(ID("loadCheck"),"error","วง"+SA[i][CC.ROUND]+"มีนิสิตซ้ำ: "+SA[i][CC.STUDENT])
+          return false
+        }
+        roundTree[SA[i][CC.ROUND]].studentList.push(SA[i][CC.STUDENT]==""?("BREAK"+roundTree[SA[i][CC.ROUND]].breakCount):SA[i][CC.STUDENT])
+        //console.log(roundTree[SA[i][CC.ROUND]].studentList)
+        //check staff
+        if(SA[i][CC.STAFF]!="" && roundTree[SA[i][CC.ROUND]].staffList.includes(SA[i][CC.STAFF])){
+          emit(ID("loadCheck"),"error","วง"+SA[i][CC.ROUND]+"มีอาจารย์ซ้ำ: "+SA[i][CC.STAFF])
+          return false
+        }
+        SA[i][CC.STAFF]==""?"":roundTree[SA[i][CC.ROUND]].staffList.push(SA[i][CC.STAFF])
+        //check exam
+        if(SA[i][CC.EXAM]!="" && roundTree[SA[i][CC.ROUND]].examList.includes(SA[i][CC.EXAM])){
+          emit(ID("loadCheck"),"caution","วง"+SA[i][CC.ROUND]+"มีข้อสอบซ้ำ: "+SA[i][CC.EXAM])
+        }
+        SA[i][CC.EXAM]==""?"":roundTree[SA[i][CC.ROUND]].examList.push(SA[i][CC.EXAM])
+        //check exam & staff
+        if(SA[i][CC.EXAM]!="" && SA[i][CC.STAFF]==""){
+          emit(ID("loadCheck"),"error","วง"+SA[i][CC.ROUND]+"มีข้อสอบไม่มีอาจารย์คุม: "+SA[i][CC.EXAM])
+          return false
+        }
+        if(SA[i][CC.STAFF]!="" && !Object.keys(staffTree).includes(SA[i][CC.STAFF]))staffTree[SA[i][CC.STAFF]]=[]
+        if(SA[i][CC.STAFF]!="" && !staffTree[SA[i][CC.STAFF]].includes(SA[i][CC.EXAM]))staffTree[SA[i][CC.STAFF]].push(SA[i][CC.EXAM])
+        if(SA[i][CC.EXAM]!="" && !Object.keys(testTree).includes(SA[i][CC.EXAM]))testTree[SA[i][CC.EXAM]]={}
+        if(SA[i][CC.EXAM]!="" && testTree[SA[i][CC.EXAM]][SA[i][CC.STAFF]])testTree[SA[i][CC.EXAM]][SA[i][CC.STAFF]].push([SA[i][CC.ROUND],roundTree[SA[i][CC.ROUND]].studentList[roundTree[SA[i][CC.ROUND]].studentList.length-1]])
+        if(SA[i][CC.EXAM]!="" && !testTree[SA[i][CC.EXAM]][SA[i][CC.STAFF]])testTree[SA[i][CC.EXAM]][SA[i][CC.STAFF]] = [  [SA[i][CC.ROUND] ,  roundTree[SA[i][CC.ROUND]].studentList[roundTree[SA[i][CC.ROUND]].studentList.length-1]] ]
+
+      }
+      emit(ID("loadCheck"),"approve","ไม่มีอาจารย์ชื่อซ้ำในวงเดียวกัน")
+      emit(ID("loadCheck"),"approve","ไม่มีนิสิตชื่อซ้ำในวงเดียวกัน")
+      emit(ID("loadCheck"),"approve","ไม่มีอาจารย์ชื่อซ้ำในวงเดียวกัน")
+      emit(ID("loadCheck"),"approve","ข้อสอบทุกข้อมีอาจารย์คุม")
+      Object.keys(staffTree).forEach(staff=>{
+        if(staffTree[staff].length>1)emit(ID("loadCheck"),"caution",staff+"คุมข้อสอบมากกว่า 1 ชื่อ")
+      })
+      ID("showTree").appendChild(CE("p")).innerText = " มีอาจารย์ทั้งหมด "+Object.keys(staffTree).length + " คน ได้แก่: " + Object.keys(staffTree).toString()
+      ID("showTree").appendChild(CE("p")).innerText = " มีข้อสอบ OSCE ทั้งหมด "+Object.keys(testTree).length + " ข้อ ได้แก่: " + Object.keys(testTree).toString()
+      ID("showTree").appendChild(CE("p")).innerText = "วงสอบมีทั้งหมด "+roundList.length+" วง ได้แก่"
+      let d = ID("showTree").appendChild(CE("ul"))
+      Object.keys(roundTree).forEach(round=>{
+        let d2 = d.appendChild(CE("li"))
+        let d3 = d2.appendChild(CE("ul"))
+        d3.innerText = round + " มีนิสิต " +roundTree[round].studentList.length + " คน และมีข้อพัก " +roundTree[round].breakCount+ " ข้อ"
+        for(let n = 0; n<roundTree[round].staffList.length; n++)
+          d3.appendChild(CE("li")).innerText = roundTree[round].staffList[n]+" คุม "+roundTree[round].examList[n]
+      })
+      ID("loadFile").style.display = "none"
+      let b = document.body.appendChild(CE("input"))
+      b.type = "button"
+      b.id = "confirmInput"
+      b.value = "Click this button to confirm data."
+      b.addEventListener("click",step2)
+    }
+
+    step2 = function(){
+      document.body.removeChild(ID("loadCheck"))
+      document.body.removeChild(ID("showTree"))
+      document.body.removeChild(ID("confirmInput"))
+      document.body.appendChild(CE("div",
+        {
+          "id" : "detailPart1",
+          "innerHTML" : "ระบุชื่อของการสอบในครั้งนี้ แนะนำให้ใช้ภาษาอังกฤษและตัวเลขเท่านั้น โดยควรสื่อถึงรายวิชา และหรือ ชั้นปี และวันที่สอบ เช่น CPT15MAR2021 ชื่อนี้จะใช้ระบุถึงการสอบนี้ในฐานข้อมูล และเป็น prefix ของชุดข้อสอบของกรรมการที่คุมสอบ สำหรับ password จะเป็นการเข้ารหัสรายละเอียดของข้อสอบซึ่งจะทำให้ไม่มีใครสามารถอ่านเนื้อหาของข้อสอบได้ ทั้งนีต้องให้ password กับจนท IT ด้วยเพื่อถอดรหัสข้อสอบตอนนำลง ipad"
+        },{}))
+      document.body.appendChild(CE("input",
+        {
+          "id" : "roundName",
+          "value" : Math.random().toString(36).substring(7)
+        },{})).addEventListener("change",updateName)
+      document.body.appendChild(CE("input",
+          {
+            "id" : "password",
+            "placeholder" : "ex. WeAreOnline64"
+          },{}))
+          document.body.appendChild(CE("div",
+            {
+              "id" : "FormDetail",
+              "innerHTML" : "ระบุ id ของ google form ที่ใช้เป็นทางผ่านของข้อมูลประจำรายวิชาของท่าน สำหรับค่าเริ่มต้นที่อยู่ในช่องนี้ คือ id ของ form สาธิต <br> id มีลักษณะเป็นตัวอักษรและตัวเลข56ตัว ที่อยู่หลัง https://docs.google.com/forms/d/e/ ใน link สำหรับกรอกฟอร์ม"
+            },{}))
+          document.body.appendChild(CE("input",
+            {
+              "id" : "formURL",
+              "value":"1FAIpQLSfi3kHdhaBlSaLKJBgdAbcsWVha7w4rNMFvmFpSdXHcEEVUng"
+            },{})).addEventListener("change",updateName)
+      document.body.appendChild(CE("div",
+          {
+            "id" : "detailPart2",
+            "innerHTML" : "upload file .csv ของข้อสอบแต่ละข้อ แล้วระบุชื่อเฉพาะที่จะใช้แทนข้อสอบแต่ละข้อ ชื่อจะปรากฎอยู่ในฐานข้อมูลร่วมกับชื่อการสอบโดยไม่เข้ารหัส ดังนั้นไม่ควรใช้ชื่อที่เปิดเผยเนื้อหาของข้อสอบมากเกินไป เช่น แทนที่จะใช้คำว่า Jaundice อาจเลี่ยงเป็น HistoryGI หรือชื่ออื่นก็ได้ที่จะทำให้กรรมการระบุได้ว่าหมายถึงข้อสอบอะไรโดยไม่ยากจนเกินไป... ระบบจะแสดงชื่ออาจารย์ วงที่คุมและนิสิตคนแรกของวงนั้น โปรดตรวจสอบความถูกต้อง โดยทั่วไปอาจารย์ 1 ท่านจะมีชื่อคุมข้อสอบเพียงข้อเดียว ในกรณีที่กรรมการ 1 ท่านคุมข้อสอบมากกว่า 1 ข้อจริง ๆ ขอให้ถือเสมือนว่าเป็นการคุมสอบข้อใหม่โดยอาจารย์ท่านใหม่ และควรมี ipad ให้อาจารย์ 2 เครื่อง"
+          },{}))
+
+      Object.keys(testTree).forEach(k=>{
+        let panel = document.body.appendChild(CE("div",{"className":"inputCSVDiv"}))
+        panel.appendChild(CE("span",{"innerHTML":k}))
+        panel.appendChild(CE("input",{"className":"examName","value":Math.random().toString(36).substring(7)})).addEventListener("change",updateName)
+        panel.appendChild(CE("input",{"id":k+"_","type":"file","className":"examCSV"})).setAttribute("onchange","export_promise2('"+(k+"_")+"',readINPUT(event))")
+
+        Object.keys(testTree[k]).forEach(staff=>{
+          let l = panel.appendChild(CE("p"))
+          l.dataset.examName = k
+          l.dataset.staffName = staff
+          l.appendChild(CE("span",{"className":"unitName"}))
+          l.appendChild(CE("input",{"type":"button","value":"test"})).addEventListener("click",testRun)
+          l.appendChild(CE("span",{"innerText":staff+": "+testTree[k][staff].toString()}))
+        })
+      })
+      updateName()
+
+      document.body.appendChild(CE("input",{"type":"button","value":"EXPORT!"})).addEventListener("click",final_export)
+
+      let D = document.body.appendChild(CE("div",{"className":"rowFlex"}))
+      log(D)
+      D.appendChild(CE("div",{"id":"originCode","className":"colFlex1"}))
+      D.appendChild(CE("div",{"id":"encryptedCode","className":"colFlex1"}))
+      D.appendChild(CE("div",{"id":"decryptedCode","className":"colFlex1"}))
+      document.body.appendChild(CE("div",{"id":"fullTree"}))
+      document.body.appendChild(headerBuilder())
+    }
+
+    updateName = function(){
+      let roundName = ID("roundName").value
+      $(".examName").forEach(exam=>{
+        let examName = exam.value
+        let panel = exam.parentElement
+        let unitId = 1
+        panel.querySelectorAll(".unitName").forEach(unit=>{
+          unit.innerHTML = roundName+"-"+examName+"-"+ unitId++
+        })
+      })
+    }
+
+    testRun = function(event){
+      //clear the exam
+      let examText =superExam[event.target.parentElement.parentElement.querySelectorAll(".examCSV")[0].id]
+      ID("originCode").innerHTML = examText
+      let codeText = CryptoJS.AES.encrypt(examText,ID("password").value).toString()
+      ID("encryptedCode").innerHTML = codeText
+      ID("decryptedCode").innerHTML = CryptoJS.AES.decrypt(codeText,ID("password").value).toString(CryptoJS.enc.Utf8)
+      //build template Tree
+      test_name = event.target.parentElement.querySelectorAll(".unitName")[0].innerHTML
+      let fullTree = buildFullTree_1(event.target.parentElement.dataset.examName,event.target.parentElement.dataset.staffName)
+      fullTree.examText = codeText
+      //add score and build eval form
+      //display
+      log(fullTree)
+      ID("fullTree").innerHTML = JSON.stringify(fullTree)
+      fullTree.examText = CryptoJS.AES.decrypt(fullTree.examText,ID("password").value).toString(CryptoJS.enc.Utf8)
+      $('#header').innerHTML = ""
+      $('#platform').innerHTML = ""
+      header_generator(fullTree)
+      exam_generator(fullTree.examText,fullTree)
+      superTree[test_name] = fullTree
+    }
+
+    buildFullTree_1 = function(E,S){
+      log("build"+E+";"+S)
+      var fullTree = {
+        'examiner':S,
+        'exam_date':ID("roundName").value,
+        'exam_Name':E,
+        'examText':"",
+        'round':[]
+      }
+      for(let i=0;i<testTree[E][S].length;i++){
+        log(testTree[E][S][i])
+        let theList = roundTree[testTree[E][S][i][0]].studentList
+        let firstStudent = testTree[E][S][i][1]
+        let j = 0
+        while(theList[j]!=firstStudent && j<theList.length)j++
+        log(rotateArray(theList,j,false))
+        fullTree.round.push({
+          "round_name":testTree[E][S][i][0],
+          "student":[]
+        })
+        rotateArray(theList,j,false).forEach(SS=>{
+          fullTree.round[fullTree.round.length-1].student.push({"student_name":SS})
+        })
+      }
+      return(fullTree)
+    }
+
+
+    headerBuilder = function(){
+      let D = CE("div")
+      D.id = "container"
+      D.innerHTML = `<div id="header">
+        <div class="toprightHolder"><div id="smaller" onclick="font(-1)">-</div><div id="larger" onclick="font(1)">+</div></div>
+      </div>
+      <div id=skipperDiv><input type=checkbox onchange="skipper()" id=skipper >Skip this student</div>
+      <div id=platform></div>`
+      return(D)
+    }
+
+    final_export = function(){
+      let URL = $("#formURL").value
+      let _PRE = `<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="utf-8"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="viewport" content="user-scalable=no, width=device-width"/><meta name="apple-mobile-web-app-title" content="cOSCE"/><title>OSCE_2021</title><link rel="icon" href="http://mdcu.github.io/onka.js/asset/onka.png" type="image/x-icon"/><link rel="stylesheet" href="http://mdcu.github.io/onka.js/onka_base.css"/><link rel="stylesheet" href="osce.css"/>`
+
+      let _PRE2 = '<script src="http://mdcu.github.io/onka.js/onka.js">' + '<\/script>'+'<script src="http://mdcu.github.io/onka.js/onka_array.js">'+'<\/script>'+'<script src="http://mdcu.github.io/onka.js/onka_file.js">'+'<\/script>'+'<script src="osce.js">'+'<\/script>'+'<script src="real_osce.js">'+'<\/script>'+'<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js">'+'<\/script><script>'
+
+      let _POST = `<\/script></head><body><input type=button id=finish class=hidden onclick="finish()" value="*** SUBMIT SCORE ***"><div id="header"><div class="toprightHolder"><div id="smaller" onclick="font(-1)">-</div><div id="larger" onclick="font(1)">+</div></div></div><div id=skipperDiv><input type=checkbox onchange="skipper()" id=skipper >Skip this student</div><div id=platform></div><div id=score></div>`+`<script> activator();setInterval(register,60*1000);<\/script></body></html>`
+
+      //$(".unitName").forEach(U=>{
+      let UU = $(".unitName")
+      let u = 0
+      let Interval = setInterval(function(){
+        U = UU[u]
+        let _MID = `const test_name = "${$('#roundName').value+"-"+U.parentElement.dataset.examName}"
+        const form_url = "https://docs.google.com/forms/d/e/${URL}/formResponse"
+        const encoded ="${CryptoJS.AES.encrypt(superExam[U.parentElement.dataset.examName+"_"],ID("password").value).toString()}"
+        var fullTree = {
+          'examiner':'${U.parentElement.dataset.staffName}',
+          'exam_date':'${$('#roundName').value}',
+          'examText':"",
+          'round':${__round_export(U.parentElement.dataset.examName,U.parentElement.dataset.staffName)}
+        }
+        `
+        let superTXT = _PRE+_PRE2+_MID+_POST
+
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(superTXT));
+        element.setAttribute('download', U.innerText+".html");
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        console.log(U.innerText)
+        u++
+        if(u >= UU.length){clearInterval(Interval)}
+      },300)
+      //})
+    }
+
+    __round_export = function(E,S){
+      let restxt = `[`
+      for(let i=0;i<testTree[E][S].length;i++){
+        let theList = roundTree[testTree[E][S][i][0]].studentList
+        let firstStudent = testTree[E][S][i][1]
+        let j = 0
+        while(theList[j]!=firstStudent && j<theList.length)j++
+        restxt += `{'round_name':'${testTree[E][S][i][0]}','student':[`
+        rotateArray(theList,j,false).forEach(SS=>{
+          restxt += `{'student_name':'${SS}'},`
+        })
+        restxt += `]},`
+      }
+      restxt += ']'
+      return restxt
+    }
+
+    </script>
+  </head>
+  <body>
+    <div id="loadFile">
+    <p>เปิดไฟล์ตารางวงสอบที่นี่...</p>
+    <input type="file" onchange="export_promise(readINPUT(event))"/><input type="button" onclick="read_round_table(my_clipboard);" value="Render"/>
+    </div>
+
+
+  </body>
+</html>

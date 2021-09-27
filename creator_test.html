@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="viewport" content="user-scalable=no, width=device-width"/>
+    <meta name="apple-mobile-web-app-title" content="cOSCE"/>
+    <title>OSCE Creator</title>
+    <link rel="icon" href="https://mdcu.github.io/onka.js/asset/onka.png" type="image/x-icon"/>
+    <link rel="stylesheet" href="https://mdcu.github.io/onka.js/onka_base.css"/>
+    <link rel="stylesheet" href="osce.css"/>
+    <!--<link rel="stylesheet" href="onka_underproduction.css"/> <!-- comment out this line once design process is done-->
+    <script src="https://mdcu.github.io/onka.js/onka.js"></script>
+    <script src="https://mdcu.github.io/onka.js/onka_array.js"></script>
+    <script src="https://mdcu.github.io/onka.js/onka_file.js"></script>
+    <script src="osce.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <!--
+      ```
+        stepwise
+        1) JSON.stringify the examTree
+        2) CryptoJS.AES.encrypt(...,PASSWORD)
+        3) CryptoJS.AES.decrypt(...,PASSWORD).toString(CryptoJS.enc.Utf8)
+        4) JSON.parse(...)
+      ```
+    -->
+
+    <script>
+
+    var fullTree = {
+      'examiner':'อ.ไอศวรรย์ เพชรล่อเหลียน',
+      'exam_date':'15-03-2021',
+      'examText':"",
+      'round':[
+        {
+          'round_name':'A-1',
+          'student':[
+            {'student_name':'C1-11 กรภัทร สหรัฐ'},
+            {'student_name':'C1-12 กฤษฎา รามา'},
+            {'student_name':'C1-13 วสุ ไพรีพินาศ'}
+          ]
+        },
+        {
+          'round_name':'A-2',
+          'student':[
+            {'student_name':'C2-12 Babarah Bohre'},
+            {'student_name':'BREAK'},
+            {'student_name':'C2-8 Carlson Rivendell'}
+          ]
+        }
+      ]
+    }
+
+
+    </script>
+  </head>
+  <body>
+    <input type="file" onchange="export_promise(readINPUT(event))"/><input type="button" onclick="header_generator(fullTree);exam_generator(my_clipboard,fullTree);" value="Render"/>
+    <div id="header">
+      <div class="toprightHolder"><div id="smaller" onclick="font(-1)">-</div><div id="larger" onclick="font(1)">+</div></div>
+    </div>
+    <div id=skipperDiv><input type=checkbox onchange="skipper()" id=skipper >Skip this student</div>
+    <div id=platform></div>
+    <div id=score></div>
+  </body>
+</html>
