@@ -273,6 +273,7 @@ criteriaClick = function(event){
       S.classList.remove("borderHighlight")
     }
   })
+  register()
 }
 
 /* action of clicking on score --> update score data */
@@ -335,6 +336,7 @@ checkStudentCompleted = function(){
   if($("#"+$("#round_selector").value).options.length ==
   $("#"+$("#round_selector").value).querySelectorAll(".completed , .skipped").length){
     $("#"+$("#round_selector").value).classList.add("completed")
+    data_upload([fullTree.round[current_round]],"backup")
   }else{$("#"+$("#round_selector").value).classList.remove("completed")}
   if(document.getElementById("finish"))if(__checkAllCompleted()){
     $("#finish").classList.remove("hidden")
@@ -342,6 +344,7 @@ checkStudentCompleted = function(){
     $("#finish").classList.add("hidden")
   }
   $("#score").innerHTML = arrayToTable(display_realtime_score())
+  register()
 }
 
 __checkAllCompleted = function(){
