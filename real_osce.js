@@ -20,6 +20,7 @@ function activator(){
     exam_generator(decoded,fullTree)
     register()
   }
+  document.body.appendChild(CE("input",{"type":"button","value":"manual backup"})).addEventListener("click",function(){data_upload(fullTree.round,"manual")})
 }
 
 function register(){

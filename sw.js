@@ -1,7 +1,7 @@
 // Choose a cache name
 const cacheName = 'cache-v1';
 // List the files to precache
-const precacheResources = ['real_osce.js','osce.css','osce.js',
+const precacheResources = ['/','real_osce.js','osce.css','osce.js',
 "https://mdcu.github.io/onka.js/asset/onka.png",
 "https://mdcu.github.io/onka.js/onka_base.css",
 "https://mdcu.github.io/onka.js/onka.js",
