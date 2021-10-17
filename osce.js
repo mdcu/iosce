@@ -326,7 +326,7 @@ skipper = function(){
 }
 
 checkStudentCompleted = function(){
-  let already_completed = $("#"+$("#round_selector").value).selectedOptions[0].classList.includes("completed")
+  let already_completed = [...$("#"+$("#round_selector").value).selectedOptions[0].classList].includes("completed")
   $("#"+$("#round_selector").value).selectedOptions[0].classList.add("completed")
   $(".item").forEach(i=>{
     if(fullTree.round[current_round].student[current_student][i.id]===""){
