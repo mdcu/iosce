@@ -39,7 +39,7 @@ function data_formation(data_tree,tag){
     "tag":tag,
     "test_name":test_name,
     "examiner":fullTree.examiner,
-    "score":JSON.stringify(data_tree)
+    "score":JSON.stringify(data_tree).replaceAll("item_","i").replaceAll("ZzZcriteria_","c")
   }
 }
 
