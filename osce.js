@@ -345,7 +345,7 @@ checkStudentCompleted = function(){
     $("#finish").classList.add("hidden")
   }
   $("#score").innerHTML = arrayToTable(display_realtime_score())
-  register()
+  register();
   [...$("#score").querySelectorAll("td")].forEach(cell=>{if(cell.innerText == "-")cell.style.backgroundColor="grey"})
 }
 
