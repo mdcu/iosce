@@ -326,6 +326,7 @@ skipper = function(){
 }
 
 checkStudentCompleted = function(){
+  let already_completed = $("#"+$("#round_selector").value).selectedOptions[0].classList.includes("completed")
   $("#"+$("#round_selector").value).selectedOptions[0].classList.add("completed")
   $(".item").forEach(i=>{
     if(fullTree.round[current_round].student[current_student][i.id]===""){
@@ -336,7 +337,7 @@ checkStudentCompleted = function(){
   if($("#"+$("#round_selector").value).options.length ==
   $("#"+$("#round_selector").value).querySelectorAll(".completed , .skipped").length){
     $("#"+$("#round_selector").value).classList.add("completed")
-    data_upload([fullTree.round[current_round]],"backup")
+    if(!already_completed)data_upload([fullTree.round[current_round]],"backup")
   }else{$("#"+$("#round_selector").value).classList.remove("completed")}
   if(document.getElementById("finish"))if(__checkAllCompleted()){
     $("#finish").classList.remove("hidden")
@@ -345,6 +346,7 @@ checkStudentCompleted = function(){
   }
   $("#score").innerHTML = arrayToTable(display_realtime_score())
   register()
+  [...$("#score").querySelectorAll("td")].forEach(cell=>{if(cell.innerText == "-")cell.style.backgroundColor="grey"})
 }
 
 __checkAllCompleted = function(){
