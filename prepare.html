@@ -192,12 +192,12 @@
           document.body.appendChild(CE("div",
             {
               "id" : "FormDetail",
-              "innerHTML" : "ระบุ id ของ google form ที่ใช้เป็นทางผ่านของข้อมูลประจำรายวิชาของท่าน สำหรับค่าเริ่มต้นที่อยู่ในช่องนี้ คือ id ของ form สาธิต <br> id มีลักษณะเป็นตัวอักษรและตัวเลข56ตัว ที่อยู่หลัง https://docs.google.com/forms/d/e/ ใน link สำหรับกรอกฟอร์ม"
+              "innerHTML" : "ระบุ id ของ google form ที่ใช้เป็นทางผ่านของข้อมูลประจำรายวิชาของท่าน <br> id มีลักษณะเป็นตัวอักษรและตัวเลข56ตัว ที่อยู่หลัง https://docs.google.com/forms/d/e/ ใน link สำหรับกรอกฟอร์ม"
             },{}))
           document.body.appendChild(CE("input",
             {
               "id" : "formURL",
-              "value":"1FAIpQLSfi3kHdhaBlSaLKJBgdAbcsWVha7w4rNMFvmFpSdXHcEEVUng"
+              "value": new URLSearchParams(window.location.search).get("fid")
             },{})).addEventListener("change",updateName)
       document.body.appendChild(CE("div",
           {
