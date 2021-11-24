@@ -121,7 +121,7 @@ option.completed {
 #skipperDiv {text-align:right;}
 #finish {}
 
-input[type=button], select{-webkit-appearance:none;-moza-appearance:none;}
+input[type=button], select{-webkit-appearance:none;-moza-appearance:none;color:black;}
 input[type=button] {white-space: normal;}
 
 #score table,td,th {
@@ -133,5 +133,3 @@ input[type=button] {white-space: normal;}
 
 .online::before {color:green;content: 'device is online'}
 .offline::before {color:red;content: 'device is offline'}
-
-input {font-color:black;}
