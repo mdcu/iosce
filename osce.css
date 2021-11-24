@@ -133,3 +133,5 @@ input[type=button] {white-space: normal;}
 
 .online::before {color:green;content: 'device is online'}
 .offline::before {color:red;content: 'device is offline'}
+
+input {font-color:black;}
