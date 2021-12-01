@@ -316,8 +316,7 @@
       units.forEach(u=>{
         _BODY += "<a href='"+default_prefix+u+".html'>"+u+"</a><br>"
       });
-      let _POST = "<script>function updatelink(){let prefix = document.getElementById('prefix').value;[...document.getElementsByTagName('a')].forEach(A=>{A.href = prefix + A.innerText + '.html'})}</script></body></html>" ;
-      console.log(c)
+      let _POST = `<script>function updatelink(){let prefix = document.getElementById('prefix').value;[...document.getElementsByTagName('a')].forEach(A=>{A.href = prefix + A.innerText + '.html'})}</script></body></html>` ;
       var element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(_PRE+_BODY+_POST));
       element.setAttribute('download', document.getElementById("roundName").value+".html");
