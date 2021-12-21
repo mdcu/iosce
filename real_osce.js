@@ -100,6 +100,10 @@ function genData(data){ // make full form submission ready
   }
 
 function finish(){
+  if(!window.navigator.onLine){
+    alert("The device is offline. Please connect to internet before submit final score.")
+    return 0;
+  }
   let pname = prompt("Are you going to submit the result? If so, please enter your name:")
   if(pname != ""){
     fullTree.examiner = pname

@@ -326,13 +326,14 @@ skipper = function(){
 }
 
 checkStudentCompleted = function(){
-  let already_completed = [...$("#"+$("#round_selector").value).selectedOptions[0].classList].includes("completed")
+  let already_completed = $("#"+$("#round_selector").value).selectedOptions[0].classList.contains("completed")
   $("#"+$("#round_selector").value).selectedOptions[0].classList.add("completed")
   $(".item").forEach(i=>{
     if(fullTree.round[current_round].student[current_student][i.id]===""){
       $("#"+$("#round_selector").value).selectedOptions[0].classList.remove("completed")
     }
   })
+  if(!already_completed && $("#"+$("#round_selector").value).selectedOptions[0].classList.contains("completed"))data_upload([fullTree.round[current_round]],"backup")
   $("#student_status").className = $("#"+$("#round_selector").value).selectedOptions[0].className
   if($("#"+$("#round_selector").value).options.length ==
   $("#"+$("#round_selector").value).querySelectorAll(".completed , .skipped").length){
