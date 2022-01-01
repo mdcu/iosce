@@ -139,7 +139,7 @@ html_generator = function(tree){
     x.id = r.id
     if(r.type=="section"){
       x.innerText = r.text
-      x.style.backgroundColor = r.backgroundcolor
+      x.style.backgroundColor = r.bgcolor
       x.style.color = r.fontcolor
     }
     else if(r.type=="item"){
@@ -158,7 +158,7 @@ html_generator = function(tree){
           r.criteria.forEach(cri=>{
             let b = document.createElement("input")
             b.type = "button"
-            b.className = "criteria"
+            b.className = "criteria" + ((+cri.weight)<0?" neg":""
             b.id = cri.id
             b.value = cri.text
             b.dataset.weight = cri.weight
@@ -179,7 +179,7 @@ html_generator = function(tree){
         r.score.forEach(sco=>{
           let b = document.createElement("input")
           b.type="button"
-          b.className = "score"
+          b.className = "score" + ((+sco.value)<0?" neg":""
           b.id = sco.id
           b.value = sco.value
           b.dataset.counter = sco.counter

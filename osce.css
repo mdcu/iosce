@@ -7,6 +7,7 @@
   --lightFont:rgb(250,250,250);
   --criteriaBackground:rgb(180,180,180);
   --criteriaHighlight:rgb(100,200,250);
+  --negHighlight:rgb(255,102,102);
   --scoreBackground:rgb(200,200,200);
   --scoreHighlight:rgb(100,230,100);
   --scoreBorder:rgb(180,180,180);
@@ -60,6 +61,11 @@ option.completed {
 .criteria.checked {
   background-color: var(--criteriaHighlight);
 }
+
+.criteria.checked.neg {
+  background-color: var(--negHighlight);
+}
+
 .score, .overwrite{
   display:block;
   width:80%;
@@ -70,6 +76,7 @@ option.completed {
 .overwrite {background-color: var(--overwriteBackground);text-align: center;}
 .overwrite.checked{background-color: var(--overwriteHighlight);}
 .score.checked{background-color: var(--scoreHighlight);}
+.score.checked.neg{background-color: var(--negHighlight);}
 .score.borderHighlight {
   border-color: var(--scoreBorderHighlight);
 }
