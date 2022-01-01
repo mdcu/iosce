@@ -333,12 +333,12 @@ checkStudentCompleted = function(){
       $("#"+$("#round_selector").value).selectedOptions[0].classList.remove("completed")
     }
   })
-  if(!already_completed && $("#"+$("#round_selector").value).selectedOptions[0].classList.contains("completed"))data_upload([fullTree.round[current_round]],"backup")
+  if(!already_completed && $("#"+$("#round_selector").value).selectedOptions[0].classList.contains("completed"))if(typeof data_upload !== 'undefined')data_upload([fullTree.round[current_round]],"backup")
   $("#student_status").className = $("#"+$("#round_selector").value).selectedOptions[0].className
   if($("#"+$("#round_selector").value).options.length ==
   $("#"+$("#round_selector").value).querySelectorAll(".completed , .skipped").length){
     $("#"+$("#round_selector").value).classList.add("completed")
-    if(!already_completed)data_upload([fullTree.round[current_round]],"backup")
+    if(!already_completed)if(typeof data_upload !== 'undefined')data_upload([fullTree.round[current_round]],"backup")
   }else{$("#"+$("#round_selector").value).classList.remove("completed")}
   if(document.getElementById("finish"))if(__checkAllCompleted()){
     $("#finish").classList.remove("hidden")
@@ -346,7 +346,7 @@ checkStudentCompleted = function(){
     $("#finish").classList.add("hidden")
   }
   $("#score").innerHTML = arrayToTable(display_realtime_score())
-  register();
+  if(typeof register !== 'undefined')register();
   [...$("#score").querySelectorAll("td")].forEach(cell=>{if(cell.innerText == "-")cell.style.backgroundColor="grey"})
 }
 
