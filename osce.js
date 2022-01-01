@@ -158,7 +158,7 @@ html_generator = function(tree){
           r.criteria.forEach(cri=>{
             let b = document.createElement("input")
             b.type = "button"
-            b.className = "criteria" + ((+cri.weight)<0?" neg":"")
+            b.className = "criteria" + ((+cri.weight)<=0?" neg":"")
             b.id = cri.id
             b.value = cri.text
             b.dataset.weight = cri.weight
@@ -277,7 +277,7 @@ criteriaClick = function(event){
       S.classList.remove("borderHighlight")
     }
   })
-  register()
+  if(typeof register !== 'undefined')register()
 }
 
 /* action of clicking on score --> update score data */
