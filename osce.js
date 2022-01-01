@@ -70,6 +70,8 @@ exam_generator = function(examText,fullTree){
     let tmpI = {"type":examArray[i][0],"text":examArray[i][1]}
     if(tmpI.type=="section"){
       tmpI["id"]="section_" + section_in
+      tmpI["bgcolor"] = examArray[i][2]==""?"darkgrey":examArray[i][2]
+      tmpI["fontcolor"] = examArray[i][3]==""?"white":examArray[i][3]
       tmpO.push(tmpI)
       section_in++
     }
@@ -137,6 +139,8 @@ html_generator = function(tree){
     x.id = r.id
     if(r.type=="section"){
       x.innerText = r.text
+      x.style.backgroundColor = r.backgroundcolor
+      x.style.color = r.fontcolor
     }
     else if(r.type=="item"){
       x.dataset.overwrite = r.overwrite
