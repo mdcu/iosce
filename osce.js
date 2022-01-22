@@ -265,11 +265,14 @@ criteriaClick = function(event){
     counter += +N.dataset.weight
   })
   let foundmatch = false
+  console.log(counter)
   event.target.parentElement.nextElementSibling.querySelectorAll(".score").forEach(S=>{
+    console.log(S.dataset.counter)
     if(!foundmatch &&
       (
-        ( +S.dataset.counter >=0 && +S.dataset.counter <= counter) ||
-        ( +S.dataset.counter <0 && +S.dataset.counter >= counter)
+        +S.dataset.counter <= counter
+        //( +S.dataset.counter >=0 && +S.dataset.counter <= counter) ||
+        //( +S.dataset.counter <0 && +S.dataset.counter >= counter)
       )){
       foundmatch = true
       S.classList.add("borderHighlight")
@@ -277,7 +280,6 @@ criteriaClick = function(event){
       S.classList.remove("borderHighlight")
     }
   })
-  if(typeof register !== 'undefined')register()
 }
 
 /* action of clicking on score --> update score data */
